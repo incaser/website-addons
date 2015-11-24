@@ -8,22 +8,46 @@ $(document).ready(function () {
     update_json.resolve();
     $(".oe_website_sale input.js_quantity").change(function () {
         var $input = $(this);
-        update_json = update_json.then(function(){
-            var value = parseInt($input.val(), 10);
-            if (isNaN(value)) value = 0;
-            return openerp.jsonRpc("/shop/cart/update_json", 'call', {
-                'line_id': parseInt($input.data('line-id'),10),
-                'product_id': parseInt($input.data('product-id') || $('input.product_id').val(),10),
-                'set_qty': value})
+        if ($input.data('update_change')) {
+            return;
+        }
+        var value = parseInt($input.val(), 10);
+        var $dom = $(this).closest('td');
+        var default_price = parseFloat($dom.find('.text-danger > span.oe_currency_value').text().replace(',', '.'));
+        var line_id = parseInt($input.data('line-id'),10);
+        var product_id = parseInt($input.data('product-id'),10);
+        var product_ids = [product_id];
+        if (isNaN(value)) value = 0;
+        $input.data('update_change', true);
+        openerp.jsonRpc("/shop/get_unit_price", 'call', {
+            'product_ids': product_ids,
+            'add_qty': value,
+            'use_order_pricelist': true})
+        .then(function (res) {
+            //basic case
+            debugger;
+            $dom.find('span.oe_currency_value').last().text(res[product_id].toFixed(2));
+            $dom.find('.text-danger').toggle(res[product_id]<default_price && (default_price-res[product_id] > default_price/100));
+            openerp.jsonRpc("/shop/cart/update_json", 'call', {
+            'line_id': line_id,
+            'product_id': parseInt($input.data('product-id'),10),
+            'set_qty': value})
             .then(function (data) {
+                $input.data('update_change', false);
+                if (value !== parseInt($input.val(), 10)) {
+                    $input.trigger('change');
+                    return;
+                }
                 if (!data.quantity) {
-                    location.reload();
+                    location.reload(true);
                     return;
                 }
                 var $q = $(".my_cart_quantity");
                 $q.parent().parent().removeClass("hidden", !data.quantity);
                 $q.html(data.cart_quantity).hide().fadeIn(600);
-                //$input.val(data.quantity);
+
+                $input.val(data.quantity);
+                $('.js_quantity[data-line-id='+line_id+']').val(data.quantity).html(data.quantity);
                 $("#cart_total").replaceWith(data['website_sale.total']);
             })
         })
