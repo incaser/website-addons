@@ -12,7 +12,7 @@ $(document).ready(function () {
             return;
         }
         var value = parseInt($input.val(), 10);
-        var $dom = $(this).closest('td');
+        var $dom = $(this).closest('.oe_product_cart');
         var default_price = parseFloat($dom.find('.text-danger > span.oe_currency_value').text().replace(',', '.'));
         var line_id = parseInt($input.data('line-id'),10);
         var product_id = parseInt($input.data('product-id'),10);
@@ -25,7 +25,6 @@ $(document).ready(function () {
             'use_order_pricelist': true})
         .then(function (res) {
             //basic case
-            debugger;
             $dom.find('span.oe_currency_value').last().text(res[product_id].toFixed(2));
             $dom.find('.text-danger').toggle(res[product_id]<default_price && (default_price-res[product_id] > default_price/100));
             openerp.jsonRpc("/shop/cart/update_json", 'call', {
@@ -52,17 +51,6 @@ $(document).ready(function () {
             })
         })
     });
-    /*
-    $('.oe_website_sale .oe_product_cart .oe_product_image a').on('click', function (ev) {
-        //ev.preventDefault();
-        var $input = $(ev.currentTarget).parent().parent().find("input");
-        $input.val(1 + parseFloat($input.val(),10));
-        $input.change();
-        $input.css('background-color', '#428bca').stop().animate({backgroundColor:'white'}, 500)
-        return false;
-    });
-    */
-
     if (page_product_id)
         $('input.js_quantity').val(0);
     openerp.jsonRpc("/shop/get_order_numbers", 'call').then(function(data){
