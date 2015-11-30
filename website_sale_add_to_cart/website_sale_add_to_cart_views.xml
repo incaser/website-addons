@@ -29,7 +29,7 @@
 			</xpath>
 			<xpath expr="//div[@itemtype='http://schema.org/Offer']/b/t" position="replace">
 				<del class="text-danger"
-					t-att-style="'' if (compute_currency(product.lst_price) - product.price) &gt; 1 else 'display: none;'"
+					t-att-style="'' if (compute_currency(product.lst_price) - product.price) &gt; 0.01 else 'display: none;'"
 					style="white-space: nowrap;" t-field="product.lst_price" t-field-options='{
 						"widget": "monetary",
 						"from_currency": "product.company_id.currency_id",
