@@ -48,6 +48,21 @@ $(document).ready(function () {
                 $input.val(data.quantity);
                 $('.js_quantity[data-line-id='+line_id+']').val(data.quantity).html(data.quantity);
                 $("#cart_total").replaceWith(data['website_sale.total']);
+                var self = this;
+                var product;
+                var price;
+                _.each(data['order_lines'], function(line){
+                    product = $("span[data-oe-expression='product.price'][data-oe-id='" + line.product_id + "']");
+                    price = line.price_unit.toFixed(2).replace('.', ',');
+                    var $price_span = product.find('.oe_currency_value');
+                    $price_span.text(price);
+                    var $price_danger = product.parent().find('del>.oe_currency_value');
+                    if (price != $price_danger.text()){
+                        $price_danger.parent().show();
+                    }else{
+                        $price_danger.parent().hide();
+                    };
+                });
             })
         })
     });
